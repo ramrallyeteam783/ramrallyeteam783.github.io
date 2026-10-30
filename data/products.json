@@ -1,0 +1,72 @@
+{
+ "updated": "2026-10-30T23:38:57.380Z",
+ "products": [
+  {
+   "id": "486766463",
+   "name": "Hoodie officiel R.A.M. Rallye Team",
+   "thumb": "",
+   "price": 65,
+   "currency": "CAD",
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "colors": [
+    {
+     "sq": "Black",
+     "n": "Noir",
+     "hex": "#0b0b0b",
+     "img": [
+      "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+     ]
+    },
+    {
+     "sq": "Navy",
+     "n": "Marine",
+     "hex": "#15263c",
+     "img": [
+      "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+     ]
+    },
+    {
+     "sq": "Dark Chocolate",
+     "n": "Chocolat",
+     "hex": "#483525",
+     "img": [
+      "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+     ]
+    },
+    {
+     "sq": "Forest Green",
+     "n": "Vert forêt",
+     "hex": "#304029",
+     "img": [
+      "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "486766464",
+   "name": "Le sticker de la #783",
+   "thumb": "",
+   "price": 5,
+   "currency": "CAD",
+   "sizes": [
+    "5.5″×5.5″"
+   ],
+   "colors": [
+    {
+     "sq": "White",
+     "n": "Blanc",
+     "hex": "#ffffff",
+     "img": [
+      "https://files.cdn.printful.com/files/9ee/9ee6de1f65ed737456f442d6f49f3d68_preview.png"
+     ]
+    }
+   ]
+  }
+ ]
+}
