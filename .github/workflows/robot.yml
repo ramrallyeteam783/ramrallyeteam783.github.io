@@ -43,14 +43,14 @@ jobs:
           const ORDER = ['XXS','XS','S','M','L','XL','2XL','XXL','3XL','4XL','5XL'];
           const list = [];
           for (let off = 0; off < 2000; off += 100) {
-            const r = await pf('/store/products?limit=100&offset=' + off);
+            const r = await pf('/sync/products?limit=100&offset=' + off);
             list.push(...(r || []));
             if (!r || r.length < 100) break;
           }
           const out = [];
           const hexCache = {};
           for (const p of list.filter(x => !x.is_ignored)) {
-            const d = await pf('/store/products/' + p.id);
+            const d = await pf('/sync/products/' + p.id);
             const sp = d.sync_product || {};
             const vs = (d.sync_variants || []).filter(v => !v.is_ignored);
             if (!vs.length) continue;
