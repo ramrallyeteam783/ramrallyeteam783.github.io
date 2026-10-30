@@ -1,0 +1,98 @@
+# Robot Printful : lit les produits de La RAM shop dans Printful (lecture seule)
+# et les enregistre dans data/products.json pour le site. Aucune commande n'est créée.
+name: Produits Printful
+
+on:
+  schedule:
+    - cron: '17 * * * *'   # toutes les heures
+  workflow_dispatch:        # bouton « Run workflow » pour lancer tout de suite
+
+permissions:
+  contents: write
+
+concurrency:
+  group: printful
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Lire les produits Printful
+        env:
+          PRINTFUL_TOKEN: ${{ secrets.PRINTFUL_TOKEN }}
+          PRINTFUL_STORE_ID: ${{ secrets.PRINTFUL_STORE_ID }}
+        run: |
+          cat > /tmp/sync.mjs <<'JS'
+          import fs from 'fs';
+          const tok = process.env.PRINTFUL_TOKEN;
+          if (!tok) { console.error('Il manque le secret PRINTFUL_TOKEN.'); process.exit(1); }
+          const hd = { Authorization: 'Bearer ' + tok };
+          if (process.env.PRINTFUL_STORE_ID) hd['X-PF-Store-Id'] = process.env.PRINTFUL_STORE_ID;
+          async function pf(p) {
+            const r = await fetch('https://api.printful.com' + p, { headers: hd });
+            const j = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error((j.error && j.error.message) || (typeof j.result === 'string' ? j.result : '') || ('Erreur Printful ' + r.status));
+            return j.result;
+          }
+          const FR = { 'black':'Noir','white':'Blanc','navy':'Marine','dark chocolate':'Chocolat','forest green':'Vert forêt','red':'Rouge','maroon':'Bordeaux','royal':'Bleu royal','sport grey':'Gris sport','heather grey':'Gris chiné','athletic heather':'Gris chiné','dark heather':'Gris foncé chiné','charcoal':'Charbon','carbon grey':'Gris carbone','grey':'Gris','gray':'Gris','light blue':'Bleu pâle','military green':'Vert militaire','olive':'Olive','sand':'Sable','pink':'Rose','light pink':'Rose pâle','orange':'Orange','gold':'Or','purple':'Mauve','brown':'Brun','khaki':'Kaki','yellow':'Jaune','green':'Vert','blue':'Bleu' };
+          const ORDER = ['XXS','XS','S','M','L','XL','2XL','XXL','3XL','4XL','5XL'];
+          const list = [];
+          for (let off = 0; off < 2000; off += 100) {
+            const r = await pf('/store/products?limit=100&offset=' + off);
+            list.push(...(r || []));
+            if (!r || r.length < 100) break;
+          }
+          const out = [];
+          const hexCache = {};
+          for (const p of list.filter(x => !x.is_ignored)) {
+            const d = await pf('/store/products/' + p.id);
+            const sp = d.sync_product || {};
+            const vs = (d.sync_variants || []).filter(v => !v.is_ignored);
+            if (!vs.length) continue;
+            const sizes = [], colors = [], seen = {};
+            for (const v of vs) {
+              const parts = String(v.name || '').split(' / ').map(s => s.trim());
+              const color = (v.color || (parts.length >= 3 ? parts[parts.length - 2] : '') || '').trim();
+              const size = (v.size || (parts.length >= 2 ? parts[parts.length - 1] : '') || '').trim();
+              if (size && !sizes.includes(size)) sizes.push(size);
+              if (color && !seen[color]) {
+                const f = (v.files || []).find(x => x.type === 'preview') || {};
+                seen[color] = { sq: color, n: FR[color.toLowerCase()] || color, hex: '', img: [f.preview_url || (v.product && v.product.image) || ''], vid: v.variant_id };
+                colors.push(seen[color]);
+              }
+            }
+            for (const c of colors) {
+              if (hexCache[c.vid] === undefined) {
+                try { const x = await pf('/products/variant/' + c.vid); hexCache[c.vid] = (x && x.variant && x.variant.color_code) || ''; } catch (e) { hexCache[c.vid] = ''; }
+              }
+              c.hex = hexCache[c.vid] || '#888888'; delete c.vid;
+            }
+            sizes.sort((a, b) => { const i = ORDER.indexOf(a), j = ORDER.indexOf(b); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); });
+            const one = s => !s.length || (s.length === 1 && /^(one size|unique)$/i.test(s[0]));
+            out.push({
+              id: String(sp.id || p.id), name: sp.name || p.name || '', thumb: sp.thumbnail_url || p.thumbnail_url || '',
+              price: parseFloat(vs[0].retail_price) || 0, currency: vs[0].currency || 'CAD',
+              sizes: one(sizes) ? [] : sizes,
+              colors: (colors.length > 1 || (colors[0] && colors[0].img[0])) && colors.length ? colors : []
+            });
+          }
+          out.sort((a, b) => b.price - a.price);
+          fs.mkdirSync('data', { recursive: true });
+          const file = 'data/products.json';
+          const old = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          if (old && JSON.stringify(old.products) === JSON.stringify(out)) { console.log('Aucun changement.'); process.exit(0); }
+          fs.writeFileSync(file, JSON.stringify({ updated: new Date().toISOString(), products: out }, null, 1));
+          console.log('Produits enregistrés : ' + out.map(x => x.name).join(', '));
+          JS
+          node /tmp/sync.mjs
+      - name: Enregistrer dans le dépôt
+        run: |
+          git config user.name "robot-printful"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/products.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Rien à enregistrer."; else git commit -m "Produits Printful mis à jour" && git pull --rebase && git push; fi
