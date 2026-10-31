@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T23:38:57.380Z",
+ "updated": "2026-10-31T13:20:55.616Z",
  "products": [
   {
    "id": "486766463",
@@ -12,6 +12,136 @@
     "M",
     "L",
     "XL"
+   ],
+   "variants": [
+    {
+     "sv": 5602175715,
+     "vid": 17295,
+     "color": "Black",
+     "size": "S",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+    },
+    {
+     "sv": 5602175716,
+     "vid": 17296,
+     "color": "Black",
+     "size": "M",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+    },
+    {
+     "sv": 5602175717,
+     "vid": 17295,
+     "color": "Black",
+     "size": "S",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/d30/d30f1623d126f4ace559e497d62f1cec_preview.png"
+    },
+    {
+     "sv": 5602175718,
+     "vid": 17298,
+     "color": "Black",
+     "size": "XL",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+    },
+    {
+     "sv": 5602175719,
+     "vid": 17311,
+     "color": "Navy",
+     "size": "S",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+    },
+    {
+     "sv": 5602175720,
+     "vid": 17312,
+     "color": "Navy",
+     "size": "M",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+    },
+    {
+     "sv": 5602175721,
+     "vid": 17313,
+     "color": "Navy",
+     "size": "L",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+    },
+    {
+     "sv": 5602175722,
+     "vid": 17314,
+     "color": "Navy",
+     "size": "XL",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+    },
+    {
+     "sv": 5602175723,
+     "vid": 32067,
+     "color": "Dark Chocolate",
+     "size": "S",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+    },
+    {
+     "sv": 5602175724,
+     "vid": 32073,
+     "color": "Dark Chocolate",
+     "size": "M",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+    },
+    {
+     "sv": 5602175725,
+     "vid": 32079,
+     "color": "Dark Chocolate",
+     "size": "L",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+    },
+    {
+     "sv": 5602175726,
+     "vid": 32085,
+     "color": "Dark Chocolate",
+     "size": "XL",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+    },
+    {
+     "sv": 5602175727,
+     "vid": 32070,
+     "color": "Forest Green",
+     "size": "S",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+    },
+    {
+     "sv": 5602175728,
+     "vid": 32076,
+     "color": "Forest Green",
+     "size": "M",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+    },
+    {
+     "sv": 5602175729,
+     "vid": 32082,
+     "color": "Forest Green",
+     "size": "L",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+    },
+    {
+     "sv": 5602175730,
+     "vid": 32088,
+     "color": "Forest Green",
+     "size": "XL",
+     "price": 65,
+     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+    }
    ],
    "colors": [
     {
@@ -56,6 +186,16 @@
    "currency": "CAD",
    "sizes": [
     "5.5″×5.5″"
+   ],
+   "variants": [
+    {
+     "sv": 5602175731,
+     "vid": 10165,
+     "color": "White",
+     "size": "5.5″×5.5″",
+     "price": 5,
+     "img": "https://files.cdn.printful.com/files/9ee/9ee6de1f65ed737456f442d6f49f3d68_preview.png"
+    }
    ],
    "colors": [
     {
