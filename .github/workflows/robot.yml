@@ -54,12 +54,13 @@ jobs:
             const sp = d.sync_product || {};
             const vs = (d.sync_variants || []).filter(v => !v.is_ignored);
             if (!vs.length) continue;
-            const sizes = [], colors = [], seen = {};
+            const sizes = [], colors = [], seen = {}, variants = [];
             for (const v of vs) {
               const parts = String(v.name || '').split(' / ').map(s => s.trim());
               const color = (v.color || (parts.length >= 3 ? parts[parts.length - 2] : '') || '').trim();
               const size = (v.size || (parts.length >= 2 ? parts[parts.length - 1] : '') || '').trim();
               if (size && !sizes.includes(size)) sizes.push(size);
+              { const pv = (v.files || []).find(x => x.type === 'preview') || {}; variants.push({ sv: v.id, vid: v.variant_id, color, size, price: parseFloat(v.retail_price) || 0, img: pv.preview_url || '' }); }
               if (color && !seen[color]) {
                 const f = (v.files || []).find(x => x.type === 'preview') || {};
                 seen[color] = { sq: color, n: FR[color.toLowerCase()] || color, hex: '', img: [f.preview_url || (v.product && v.product.image) || ''], vid: v.variant_id };
@@ -78,6 +79,7 @@ jobs:
               id: String(sp.id || p.id), name: sp.name || p.name || '', thumb: sp.thumbnail_url || p.thumbnail_url || '',
               price: parseFloat(vs[0].retail_price) || 0, currency: vs[0].currency || 'CAD',
               sizes: one(sizes) ? [] : sizes,
+              variants,
               colors: (colors.length > 1 || (colors[0] && colors[0].img[0])) && colors.length ? colors : []
             });
           }
