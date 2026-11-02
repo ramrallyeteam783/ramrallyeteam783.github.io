@@ -247,6 +247,7 @@
         cb.addEventListener('change',function(){sec.classList.toggle('closed',!cb.checked);if(tsec)tsec.classList.toggle('closed',!cb.checked);struct=true;changed();
           msg.textContent=cb.checked?'Boutique ouverte. Cliquez Enregistrer pour publier.':'Boutique fermée : produits visibles, sans bouton Acheter. Cliquez Enregistrer.';});
         w.appendChild(cb);w.appendChild(sp);box.appendChild(w);})();
+      (function(){var rb=document.createElement('a');rb.href='https://github.com/ramrallyeteam783/ramrallyeteam783.github.io/actions/workflows/robot.yml';rb.target='_blank';rb.rel='noopener';rb.id='robot-btn';rb.textContent='Mettre à jour les produits : ouvrir le robot GitHub, puis cliquer Run workflow';rb.style.cssText='display:block;margin:10px 0;padding:10px 14px;background:#ff6a00;color:#fff;font-weight:700;text-align:center;text-decoration:none;border-radius:4px';box.appendChild(rb);})();
 
       /* Produits automatiques Printful */
       (function(){var P=window.RAMpf;if(!P||!P.data||!P.data.products)return;
