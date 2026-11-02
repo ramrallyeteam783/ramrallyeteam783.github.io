@@ -1,10 +1,10 @@
 {
- "updated": "2026-11-02T18:18:10.913Z",
+ "updated": "2026-11-02T19:34:12.957Z",
  "products": [
   {
-   "id": "486766463",
+   "id": "488375720",
    "name": "Hoodie officiel R.A.M. Rallye Team",
-   "thumb": "",
+   "thumb": "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png",
    "price": 65,
    "currency": "CAD",
    "sizes": [
@@ -15,132 +15,132 @@
    ],
    "variants": [
     {
-     "sv": 5602175715,
+     "sv": 5613820738,
      "vid": 17295,
      "color": "Black",
      "size": "S",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+     "img": "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png"
     },
     {
-     "sv": 5602175716,
+     "sv": 5613820739,
      "vid": 17296,
      "color": "Black",
      "size": "M",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+     "img": "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png"
     },
     {
-     "sv": 5602175717,
+     "sv": 5613820740,
      "vid": 17297,
      "color": "Black",
      "size": "L",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/d30/d30f1623d126f4ace559e497d62f1cec_preview.png"
+     "img": "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png"
     },
     {
-     "sv": 5602175718,
+     "sv": 5613820741,
      "vid": 17298,
      "color": "Black",
      "size": "XL",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+     "img": "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png"
     },
     {
-     "sv": 5602175719,
+     "sv": 5613820742,
      "vid": 17311,
      "color": "Navy",
      "size": "S",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+     "img": "https://files.cdn.printful.com/files/ced/cedfff4fb2e4a6b0a35747cb04b63179_preview.png"
     },
     {
-     "sv": 5602175720,
+     "sv": 5613820743,
      "vid": 17312,
      "color": "Navy",
      "size": "M",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+     "img": "https://files.cdn.printful.com/files/ced/cedfff4fb2e4a6b0a35747cb04b63179_preview.png"
     },
     {
-     "sv": 5602175721,
+     "sv": 5613820744,
      "vid": 17313,
      "color": "Navy",
      "size": "L",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+     "img": "https://files.cdn.printful.com/files/ced/cedfff4fb2e4a6b0a35747cb04b63179_preview.png"
     },
     {
-     "sv": 5602175722,
+     "sv": 5613820745,
      "vid": 17314,
      "color": "Navy",
      "size": "XL",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+     "img": "https://files.cdn.printful.com/files/ced/cedfff4fb2e4a6b0a35747cb04b63179_preview.png"
     },
     {
-     "sv": 5602175723,
+     "sv": 5613820746,
      "vid": 32067,
      "color": "Dark Chocolate",
      "size": "S",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+     "img": "https://files.cdn.printful.com/files/d2c/d2c81709ced2ce3afaa984be53bd6b32_preview.png"
     },
     {
-     "sv": 5602175724,
+     "sv": 5613820747,
      "vid": 32073,
      "color": "Dark Chocolate",
      "size": "M",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+     "img": "https://files.cdn.printful.com/files/d2c/d2c81709ced2ce3afaa984be53bd6b32_preview.png"
     },
     {
-     "sv": 5602175725,
+     "sv": 5613820748,
      "vid": 32079,
      "color": "Dark Chocolate",
      "size": "L",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+     "img": "https://files.cdn.printful.com/files/d2c/d2c81709ced2ce3afaa984be53bd6b32_preview.png"
     },
     {
-     "sv": 5602175726,
+     "sv": 5613820749,
      "vid": 32085,
      "color": "Dark Chocolate",
      "size": "XL",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+     "img": "https://files.cdn.printful.com/files/d2c/d2c81709ced2ce3afaa984be53bd6b32_preview.png"
     },
     {
-     "sv": 5602175727,
+     "sv": 5613820750,
      "vid": 32070,
      "color": "Forest Green",
      "size": "S",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+     "img": "https://files.cdn.printful.com/files/0be/0be1ddb562b85a086171dbc9af151768_preview.png"
     },
     {
-     "sv": 5602175728,
+     "sv": 5613820751,
      "vid": 32076,
      "color": "Forest Green",
      "size": "M",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+     "img": "https://files.cdn.printful.com/files/0be/0be1ddb562b85a086171dbc9af151768_preview.png"
     },
     {
-     "sv": 5602175729,
+     "sv": 5613820752,
      "vid": 32082,
      "color": "Forest Green",
      "size": "L",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+     "img": "https://files.cdn.printful.com/files/0be/0be1ddb562b85a086171dbc9af151768_preview.png"
     },
     {
-     "sv": 5602175730,
+     "sv": 5613820753,
      "vid": 32088,
      "color": "Forest Green",
      "size": "XL",
      "price": 65,
-     "img": "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+     "img": "https://files.cdn.printful.com/files/0be/0be1ddb562b85a086171dbc9af151768_preview.png"
     }
    ],
    "colors": [
@@ -149,7 +149,7 @@
      "n": "Noir",
      "hex": "#0b0b0b",
      "img": [
-      "https://files.cdn.printful.com/files/34a/34ab88eb497ca3f45af639584a7306e8_preview.png"
+      "https://files.cdn.printful.com/files/f58/f58d4d1c55a07cf86b09f616cb63e5d7_preview.png"
      ]
     },
     {
@@ -157,7 +157,7 @@
      "n": "Marine",
      "hex": "#15263c",
      "img": [
-      "https://files.cdn.printful.com/files/a65/a65b21f534127597cf49f2b2dbc969ce_preview.png"
+      "https://files.cdn.printful.com/files/ced/cedfff4fb2e4a6b0a35747cb04b63179_preview.png"
      ]
     },
     {
@@ -165,7 +165,7 @@
      "n": "Chocolat",
      "hex": "#483525",
      "img": [
-      "https://files.cdn.printful.com/files/6a4/6a44001f6ff3d358d910138d5e52bfa0_preview.png"
+      "https://files.cdn.printful.com/files/d2c/d2c81709ced2ce3afaa984be53bd6b32_preview.png"
      ]
     },
     {
@@ -173,15 +173,15 @@
      "n": "Vert forêt",
      "hex": "#304029",
      "img": [
-      "https://files.cdn.printful.com/files/37f/37f50c01f0e08083f8ebd34124c99c19_preview.png"
+      "https://files.cdn.printful.com/files/0be/0be1ddb562b85a086171dbc9af151768_preview.png"
      ]
     }
    ]
   },
   {
-   "id": "486766464",
+   "id": "488375753",
    "name": "Le sticker de la #783",
-   "thumb": "",
+   "thumb": "https://files.cdn.printful.com/files/f8a/f8a071e08c52328157681bce8a8af314_preview.png",
    "price": 5,
    "currency": "CAD",
    "sizes": [
@@ -189,7 +189,7 @@
    ],
    "variants": [
     {
-     "sv": 5602175731,
+     "sv": 5613820801,
      "vid": 10165,
      "color": "White",
      "size": "5.5″×5.5″",
