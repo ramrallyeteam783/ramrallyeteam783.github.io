@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-02T19:34:12.957Z",
+ "updated": "2026-11-02T21:52:38.021Z",
  "products": [
   {
    "id": "488375720",
@@ -182,7 +182,7 @@
    "id": "488375753",
    "name": "Le sticker de la #783",
    "thumb": "https://files.cdn.printful.com/files/f8a/f8a071e08c52328157681bce8a8af314_preview.png",
-   "price": 5,
+   "price": 7,
    "currency": "CAD",
    "sizes": [
     "5.5″×5.5″"
@@ -193,7 +193,7 @@
      "vid": 10165,
      "color": "White",
      "size": "5.5″×5.5″",
-     "price": 5,
+     "price": 7,
      "img": "https://files.cdn.printful.com/files/9ee/9ee6de1f65ed737456f442d6f49f3d68_preview.png"
     }
    ],
