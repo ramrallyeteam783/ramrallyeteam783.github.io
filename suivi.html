@@ -5,13 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Suivre l'auto · R.A.M. Rallye Team</title>
 <meta name="description" content="Suivez en direct une auto de rallye pendant le rallye (RAM, R.A.M. Rallye Team).">
+<link rel="manifest" href="suivi.webmanifest">
+<meta name="theme-color" content="#171a1c">
+<link rel="icon" href="suivi-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="suivi-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Suivre l'auto">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* Page « Suivre l'auto » (21 novembre 2026) : position de l'auto envoyée par RAM quand le suivi est activé (tout le rallye).
    v2 (21 nov., plusieurs équipes) : suivi.html?auto=<code> ; sans code = l'auto #783. Le nom vient du serveur.
    Spéciales en orange, liaisons en bleu. Demande la position aux 15 s en spéciale, aux 60 s sinon, et rien quand l'onglet est caché.
-   Carte maison (tuiles OpenStreetMap), sans librairie externe. Données : Worker Cloudflare ram-suivi. */
+   Carte maison (tuiles OpenStreetMap), sans librairie externe. Données : Worker Cloudflare ram-suivi.
+   v3 (21 nov., Simon : « une petite app à télécharger pour les fans et/ou l'équipe de service », « page qui s'installe ») :
+   s'installe comme une app (suivi.webmanifest, suivi-sw.js, suivi-192.png, suivi-512.png) ; bouton « Installer l'app » ;
+   l'app ouverte de l'écran d'accueil (suivi.html?app=1) montre la dernière auto ouverte avec un lien ?auto=. */
 :root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
@@ -47,11 +58,18 @@ header h1 b{color:var(--orange)}
 #attr{position:absolute;left:6px;bottom:4px;font-size:11px;color:#ccc;background:#0008;padding:1px 6px;border-radius:4px;z-index:2}
 #attr a{color:#ccc}
 footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+#inst{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--teal);background:transparent;color:var(--teal);font:italic 800 16px/1 "Barlow Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+#inst[hidden]{display:none}
+#instHelp{position:fixed;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:#000a}
+#instHelp[hidden]{display:none}
+#instHelp div{max-width:380px;padding:18px;border-radius:12px;background:var(--panel);border:2px solid var(--teal)}
+#instHelp p{margin:0 0 14px}
+#instHelp button{min-height:44px;padding:0 18px;border-radius:10px;border:0;background:var(--teal);color:#06121f;font:700 16px Barlow,sans-serif;cursor:pointer}
 </style>
 </head>
 <body>
 <header><h1>Suivre l'auto <b id="nom"></b></h1><a class="back" href="./">← Le site de l'équipe</a></header>
-<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
+<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
 <div id="map" aria-label="Carte de la position de l'auto">
   <div id="tiles"></div>
   <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ff7a1a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
@@ -60,12 +78,19 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   <div id="empty">La position de l'auto s'affiche ici quand l'équipe active le suivi.</div>
   <div id="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>
 </div>
+<div id="instHelp" hidden role="dialog" aria-label="Installer l'app"><div><p><b>Installer l'app</b></p><p id="instTxt"></p><button id="instOk" type="button">OK</button></div></div>
 <footer>La position est envoyée par l'équipe pendant le rallye. Elle peut avoir jusqu'à une minute de retard en liaison, et couper là où il n'y a pas de réseau cellulaire.</footer>
 <script>
 (function(){
   const API='https://ram-suivi.ramrallyeteam783.workers.dev/pos';
   /* Le code de l'auto dans l'adresse (suivi.html?auto=K7P3QX) ; sans code : l'auto #783. */
-  const AUTO=(new URLSearchParams(location.search).get('auto')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12)||'783';
+  /* v3 : l'app installée s'ouvre sans code (suivi.html?app=1) : elle montre la dernière auto ouverte avec un lien ?auto=. */
+  const Q=new URLSearchParams(location.search), net=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+  const SOLO=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  let AUTO=net(Q.get('auto'));
+  if(AUTO){ try{ localStorage.setItem('suivi.auto',AUTO); }catch(e){} }
+  else if(Q.has('app')||SOLO()){ try{ AUTO=net(localStorage.getItem('suivi.auto')); }catch(e){} }
+  AUTO=AUTO||'783';
   let nomVu='', err='';
   function setNom(n){ n=String(n||AUTO); if(n===nomVu) return; nomVu=n; $('nom').textContent=n; document.getElementById('car').textContent=(n.match(/#\s*([A-Za-z0-9]+)/)||[])[1]||AUTO.slice(0,6); document.title=`Suivre l'auto ${n} · R.A.M. Rallye Team`; }
   const TILE=(z,x,y)=>`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
@@ -142,6 +167,19 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   async function loop(){ if(document.hidden) return; await poll(); next(); }
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) loop(); else clearTimeout(timer); });
   setNom(AUTO==='783'?'#783':AUTO); center(46.8,-71.5); draw(); loop(); setInterval(status,5000);
+  /* Installer l'app : Android et ordinateur (Chrome, Edge) = la fenêtre du navigateur ; iPhone et iPad = explication (Partager, « Sur l'écran d'accueil »). */
+  const inst=$('inst'), help=$('instHelp'); let bip=null;
+  const iOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); bip=e; inst.hidden=SOLO(); });
+  addEventListener('appinstalled',()=>{ bip=null; inst.hidden=true; });
+  if(iOS&&!SOLO()) inst.hidden=false;
+  inst.onclick=async()=>{
+    if(bip){ const e=bip; bip=null; e.prompt(); try{ await e.userChoice; }catch(x){} inst.hidden=true; return; }
+    $('instTxt').textContent=iOS?'Touche le bouton Partager (le carré avec une flèche vers le haut), puis « Sur l\u2019écran d\u2019accueil ». L\u2019app s\u2019ouvre ensuite sur cette auto.'
+      :'Ouvre le menu du navigateur (⋮), puis « Installer l\u2019app » ou « Ajouter à l\u2019écran d\u2019accueil ». L\u2019app s\u2019ouvre ensuite sur cette auto.';
+    help.hidden=false; };
+  $('instOk').onclick=()=>{ help.hidden=true; }; help.onclick=e=>{ if(e.target===help) help.hidden=true; };
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('suivi-sw.js',{scope:'./suivi'}).catch(()=>{});
 })();
 </script>
 </body>
