@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Suivre l'auto #783 · R.A.M. Rallye Team</title>
+<meta name="description" content="Suivez en direct l'auto #783 de R.A.M. Rallye Team pendant les spéciales.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Page « Suivre l'auto » (21 novembre 2026) : position de l'auto #783 envoyée par RAM quand le suivi est activé (tout le rallye).
+   Spéciales en orange, liaisons en bleu. Demande la position aux 15 s en spéciale, aux 60 s sinon, et rien quand l'onglet est caché.
+   Carte maison (tuiles OpenStreetMap), sans librairie externe. Données : Worker Cloudflare ram-suivi. */
+:root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100%}
+header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel);border-bottom:2px solid var(--orange)}
+header a.back{color:var(--muted);text-decoration:none;font-size:14px;white-space:nowrap}
+header h1{margin:0;flex:1;min-width:0;font:italic 800 26px/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+header h1 b{color:var(--orange)}
+#bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-bottom:1px solid var(--line)}
+#chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font:italic 800 18px/1 "Barlow Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase;background:#2a2f33;color:var(--muted)}
+#chip i{width:10px;height:10px;border-radius:50%;background:currentColor}
+#chip.on{background:var(--orange);color:#111}
+#chip.on i{animation:bl 1.2s steps(2,start) infinite}
+#chip.lia{background:#3aa0ff;color:#06121f}
+#leg{display:flex;gap:12px;color:var(--muted);font-size:13px;margin-left:auto}
+#leg span{display:inline-flex;align-items:center;gap:5px}
+#leg i{width:16px;height:4px;border-radius:2px;display:inline-block}
+@keyframes bl{to{visibility:hidden}}
+#info{color:var(--muted);font-size:15px}
+#info b{color:var(--fg);font-weight:600}
+#map{position:relative;flex:1;min-height:320px;overflow:hidden;background:#1d2226;touch-action:none;cursor:grab}
+#map.drag{cursor:grabbing}
+#tiles,#over{position:absolute;inset:0}
+#tiles img{position:absolute;width:256px;height:256px;user-select:none;-webkit-user-drag:none;filter:saturate(.85) brightness(.92)}
+#over{pointer-events:none;width:100%;height:100%;overflow:visible}
+#car{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--orange);border:3px solid #fff;box-shadow:0 2px 8px #000a;display:grid;place-items:center;font:italic 800 16px/1 "Barlow Condensed",sans-serif;color:#111;pointer-events:none}
+#car[hidden]{display:none}
+#ctl{position:absolute;right:10px;top:10px;display:grid;gap:6px;z-index:2}
+#ctl button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#171a1ce6;color:var(--fg);font:700 22px/1 Barlow,sans-serif;cursor:pointer}
+#ctl button.on{border-color:var(--teal);color:var(--teal)}
+#empty{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--muted);z-index:1;pointer-events:none}
+#empty[hidden]{display:none}
+#attr{position:absolute;left:6px;bottom:4px;font-size:11px;color:#ccc;background:#0008;padding:1px 6px;border-radius:4px;z-index:2}
+#attr a{color:#ccc}
+footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header><h1>Suivre l'auto <b>#783</b></h1><a class="back" href="./">← Le site de l'équipe</a></header>
+<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
+<div id="map" aria-label="Carte de la position de l'auto #783">
+  <div id="tiles"></div>
+  <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ff7a1a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
+  <div id="car" hidden>783</div>
+  <div id="ctl"><button id="zin" type="button" aria-label="Zoomer">+</button><button id="zout" type="button" aria-label="Dézoomer">−</button><button id="follow" type="button" class="on" aria-label="Suivre l'auto" title="Suivre l'auto">◎</button></div>
+  <div id="empty">La position de l'auto s'affiche ici quand l'équipe active le suivi.</div>
+  <div id="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>
+</div>
+<footer>La position est envoyée par l'équipe pendant le rallye. Elle peut avoir jusqu'à une minute de retard en liaison, et couper là où il n'y a pas de réseau cellulaire.</footer>
+<script>
+(function(){
+  const API='https://ram-suivi.ramrallyeteam783.workers.dev/pos';
+  const TILE=(z,x,y)=>`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  const $=id=>document.getElementById(id), map=$('map'), tiles=$('tiles'), trailL=$('trailL'), trailS=$('trailS'), car=$('car');
+  let z=8, cx=0, cy=0, follow=true, pts=[], etat=null, since=0, lastSince=null, srvSkew=0, dragAt=0;
+  /* Mercator en pixels du monde au zoom z. */
+  const wx=(lon,zz)=>(lon+180)/360*256*2**zz;
+  const wy=(lat,zz)=>{ const s=Math.sin(lat*Math.PI/180); return (.5-Math.log((1+s)/(1-s))/(4*Math.PI))*256*2**zz; };
+  function center(lat,lon){ cx=wx(lon,z); cy=wy(lat,z); }
+  function draw(){
+    const W=map.clientWidth, H=map.clientHeight, n=2**z;
+    const x0=Math.floor((cx-W/2)/256), x1=Math.floor((cx+W/2)/256), y0=Math.floor((cy-H/2)/256), y1=Math.floor((cy+H/2)/256);
+    const want=new Set();
+    for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ if(ty<0||ty>=n) continue; const xx=((tx%n)+n)%n, k=`${z}/${xx}/${ty}`; want.add(k);
+      let im=tiles.querySelector(`img[data-k="${k}"]`); if(!im){ im=new Image(); im.alt=''; im.dataset.k=k; im.src=TILE(z,xx,ty); tiles.appendChild(im); }
+      im.style.left=Math.round(tx*256-cx+W/2)+'px'; im.style.top=Math.round(ty*256-cy+H/2)+'px'; }
+    [...tiles.children].forEach(im=>{ if(!want.has(im.dataset.k)) im.remove(); });
+    const sx=lon=>wx(lon,z)-cx+W/2, sy=lat=>wy(lat,z)-cy+H/2;
+    /* Deux tracés : liaisons (s=0) en bleu, spéciales (s=1) en orange ; chaque bout part du point d'avant pour ne pas laisser de trou. */
+    let dL='', dS='';
+    for(let i=0;i<pts.length;i++){ const p=pts[i], q=pts[i-1], xy=`${sx(p[2]).toFixed(1)},${sy(p[1]).toFixed(1)}`;
+      if(p[4]){ dS+=(q&&q[4]?' L':' M')+(q&&!q[4]?`${sx(q[2]).toFixed(1)},${sy(q[1]).toFixed(1)} L`:'')+xy; } else { dL+=(q&&!q[4]?' L':' M')+(q&&q[4]?`${sx(q[2]).toFixed(1)},${sy(q[1]).toFixed(1)} L`:'')+xy; } }
+    trailL.setAttribute('d',dL.trim()); trailS.setAttribute('d',dS.trim());
+    const last=pts[pts.length-1]||(etat&&etat.lat!=null?[etat.t,etat.lat,etat.lon,etat.v]:null);
+    car.hidden=!last; if(last){ car.style.left=sx(last[2])+'px'; car.style.top=sy(last[1])+'px'; }
+    $('empty').hidden=!!last;
+  }
+  function zoomTo(nz,fx,fy){ nz=Math.max(4,Math.min(18,nz)); if(nz===z) return; const W=map.clientWidth,H=map.clientHeight; fx=fx??W/2; fy=fy??H/2;
+    const k=2**(nz-z), px=cx-W/2+fx, py=cy-H/2+fy; cx=px*k-fx+W/2; cy=py*k-fy+H/2; z=nz; draw(); }
+  function setFollow(on){ follow=on; $('follow').classList.toggle('on',on); if(on) recenter(); }
+  function recenter(){ const last=pts[pts.length-1]||(etat&&etat.lat!=null?[0,etat.lat,etat.lon]:null); if(last){ center(last[1],last[2]); } draw(); }
+  $('zin').onclick=()=>zoomTo(z+1); $('zout').onclick=()=>zoomTo(z-1); $('follow').onclick=()=>setFollow(true);
+  map.addEventListener('wheel',e=>{ e.preventDefault(); const r=map.getBoundingClientRect(); zoomTo(z+(e.deltaY<0?1:-1),e.clientX-r.left,e.clientY-r.top); },{passive:false});
+  /* Glisser (1 doigt ou souris) et pincer (2 doigts). */
+  const ptr=new Map(); let pinch=null;
+  map.addEventListener('pointerdown',e=>{ if(e.target.closest('#ctl')) return; map.setPointerCapture(e.pointerId); ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); map.classList.add('drag');
+    if(ptr.size===2){ const [a,b]=[...ptr.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z}; } });
+  map.addEventListener('pointermove',e=>{ const p=ptr.get(e.pointerId); if(!p) return;
+    if(ptr.size===2&&pinch){ ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); const [a,b]=[...ptr.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=map.getBoundingClientRect();
+      const nz=Math.round(pinch.z+Math.log2(d/pinch.d)); if(nz!==z) zoomTo(nz,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); return; }
+    cx-=e.clientX-p.x; cy-=e.clientY-p.y; ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(follow) setFollow(false); dragAt=Date.now(); draw(); });
+  const up=e=>{ ptr.delete(e.pointerId); if(ptr.size<2) pinch=null; if(!ptr.size) map.classList.remove('drag'); };
+  map.addEventListener('pointerup',up); map.addEventListener('pointercancel',up);
+  addEventListener('resize',draw);
+  const hm=t=>new Date(t*1000).toLocaleTimeString('fr-CA',{hour:'2-digit',minute:'2-digit'});
+  function ago(s){ s=Math.max(0,Math.round(s)); return s<5?'à l\u2019instant':s<60?`il y a ${s} s`:s<3600?`il y a ${Math.round(s/60)} min`:`à ${hm(Date.now()/1000-s)}`; }
+  function status(){
+    const chip=$('chip'), T=$('chipT'), I=$('info'); const now=Date.now()/1000+srvSkew;
+    if(!etat){ chip.className=''; T.textContent='Pas de position'; I.textContent='Rien pour l’instant : le suivi n’est pas activé.'; return; }
+    const age=now-(etat.t||0), fresh=age<(etat.st==='ss'?120:240), v=etat.v!=null?Math.round(etat.v*3.6):null;
+    if(etat.st==='off'){ chip.className=''; T.textContent='Suivi arrêté'; I.innerHTML=`Dernière position <b>${ago(age)}</b>`; return; }
+    if(!fresh){ chip.className=''; T.textContent='Signal perdu'; I.innerHTML=`Dernière position <b>${ago(age)}</b>${etat.st==='ss'?` (${etat.ss||'SS'})`:''} : pas de réseau là où est l\u2019auto`; return; }
+    if(etat.st==='ss'){ chip.className='on'; T.textContent=`En spéciale · ${etat.ss||'SS'}`; } else { chip.className='lia'; T.textContent='En route'; }
+    I.innerHTML=`Dernière position <b>${ago(age)}</b>${v!=null?` · <b>${v} km/h</b>`:''}`;
+  }
+  async function poll(){
+    try{
+      const r=await fetch(API+(since?`?since=${since}`:''),{cache:'no-store'}); if(!r.ok) throw 0; const d=await r.json();
+      if(d.now) srvSkew=d.now-Date.now()/1000;
+      etat=d.etat;
+      /* Nouveau suivi (ou 1re lecture) : on repart à zéro ; la réponse contient déjà le trajet depuis le début du suivi. */
+      if(etat&&etat.since!==lastSince){ pts=[]; lastSince=etat.since; }
+      if(d.pts&&d.pts.length){ pts=pts.concat(d.pts).slice(-6000); since=pts[pts.length-1][0]; }
+      if(follow&&!(Date.now()-dragAt<15000)) recenter(); else draw();
+      if(etat&&pts.length&&z<12&&follow){ zoomTo(14); recenter(); }
+    }catch(e){ $('info').textContent='Connexion au serveur impossible pour le moment, on réessaie…'; }
+    status();
+  }
+  /* Aux 15 s en spéciale, aux 60 s sinon ; rien quand l'onglet est caché (on reprend tout de suite en revenant). */
+  let timer=0; function next(){ clearTimeout(timer); timer=setTimeout(loop,etat&&etat.st==='ss'?15000:60000); }
+  async function loop(){ if(document.hidden) return; await poll(); next(); }
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) loop(); else clearTimeout(timer); });
+  center(46.8,-71.5); draw(); loop(); setInterval(status,5000);
+})();
+</script>
+</body>
+</html>
