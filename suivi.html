@@ -214,7 +214,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   async function vidGo(refresh){ if(vidBusy) return; vidBusy=true;
     try{ const r=await fetch(WURL+'/acces',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV,p:PASS||undefined})}); const d=await r.json();
       if(d.ok){ if(d.p&&d.p!==PASS){ PASS=d.p; try{ localStorage.setItem(pKey,PASS); }catch(e){} }
-        vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; const f=$('vidF'), src=d.lecteur+'?autoplay=true&muted=true&preload=auto';
+        vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; const f=$('vidF'), src=d.lecteur+'?autoplay=true&muted=true';
         if(!refresh||f.getAttribute('src')!==src) f.setAttribute('src',src); vidUpd(); requestAnimationFrame(draw); return; }
       if(refresh){ vidClose(); }
       if(PASS&&['autre_appareil','annule','fini','inconnu'].includes(d.err)){ PASS=''; try{ localStorage.removeItem(pKey); }catch(e){} }
