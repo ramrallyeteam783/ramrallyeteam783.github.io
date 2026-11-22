@@ -27,8 +27,9 @@
    bouton « Voir l'intérieur » : le direct de la GoPro (Cloudflare Stream, jeton signé donné par le serveur).
    Accès payé par rallye (Stripe) ou invitation de l'équipe (?p=…), attaché au premier appareil (suivi.dev). La carte reste gratuite.
    v6 (22 nov.) : lecteur sans preload=auto (bloquait le direct sur cell) ; « Accès équipe » en bas : la clé de l'équipe (gardée sur l'appareil) voit sans payer.
-   v7 (22 nov.) : plus de qualité « Auto » (Simon) : vidéo lue par hls.js, fixée à la qualité la plus haute du direct (celle choisie dans RAM) ; se relance toute seule si le direct n'a pas commencé. */
-:root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
+   v7 (22 nov.) : plus de qualité « Auto » (Simon) : vidéo lue par hls.js, fixée à la qualité la plus haute du direct (celle choisie dans RAM) ; se relance toute seule si le direct n'a pas commencé.
+   v8 (22 nov.) : l'orange devient le jaune or de RAM (#ffc21a), aussi le trait des spéciales (Simon : « change l'orange pour le jaune or de l'app, la même partout »). */
+:root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ffc21a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
 body{display:flex;flex-direction:column;min-height:100%}
@@ -92,12 +93,12 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
 </head>
 <body>
 <header><h1>Suivre l'auto <b id="nom"></b></h1><a class="back" href="./">← Le site de l'équipe</a></header>
-<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="vidBtn" type="button" hidden aria-pressed="false"></button><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
+<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="vidBtn" type="button" hidden aria-pressed="false"></button><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ffc21a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
 <div id="main">
 <div id="vid" hidden><video id="vidV" title="Direct de l'intérieur de l'auto" playsinline muted autoplay controls></video></div>
 <div id="map" aria-label="Carte de la position de l'auto">
   <div id="tiles"></div>
-  <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ff7a1a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
+  <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ffc21a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
   <div id="car" hidden></div>
   <div id="ctl"><button id="zin" type="button" aria-label="Zoomer">+</button><button id="zout" type="button" aria-label="Dézoomer">−</button><button id="follow" type="button" class="on" aria-label="Suivre l'auto" title="Suivre l'auto">◎</button></div>
   <div id="empty">La position de l'auto s'affiche ici quand l'équipe active le suivi.</div>
