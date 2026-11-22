@@ -25,7 +25,8 @@
    l'app ouverte de l'écran d'accueil (suivi.html?app=1) montre la dernière auto ouverte avec un lien ?auto=.
    v5 (21 nov., Simon : « si un fan veut un direct il paye, et si je veux que mon équipe voie j'ai juste à autoriser ») :
    bouton « Voir l'intérieur » : le direct de la GoPro (Cloudflare Stream, jeton signé donné par le serveur).
-   Accès payé par rallye (Stripe) ou invitation de l'équipe (?p=…), attaché au premier appareil (suivi.dev). La carte reste gratuite. */
+   Accès payé par rallye (Stripe) ou invitation de l'équipe (?p=…), attaché au premier appareil (suivi.dev). La carte reste gratuite.
+   v6 (22 nov.) : lecteur sans preload=auto (bloquait le direct sur cell) ; « Accès équipe » en bas : la clé de l'équipe (gardée sur l'appareil) voit sans payer. */
 :root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
@@ -104,7 +105,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
 </div>
 <div id="vidBox" hidden role="dialog" aria-label="Voir l'intérieur"><div><p><b>Voir l'intérieur</b></p><p id="vidTxt"></p><div class="row"><button id="vidPay" type="button" hidden></button><button id="vidX" type="button">Fermer</button></div></div></div>
 <div id="instHelp" hidden role="dialog" aria-label="Installer l'app"><div><p><b>Installer l'app</b></p><p id="instTxt"></p><button id="instOk" type="button">OK</button></div></div>
-<footer>La position est envoyée par l'équipe pendant le rallye. Elle peut avoir jusqu'à une minute de retard en liaison, et couper là où il n'y a pas de réseau cellulaire.</footer>
+<footer>La position est envoyée par l'équipe pendant le rallye. Elle peut avoir jusqu'à une minute de retard en liaison, et couper là où il n'y a pas de réseau cellulaire. <a href="#" id="adm" style="color:var(--muted)">Accès équipe</a></footer>
 <script>
 (function(){
   const API='https://ram-suivi.ramrallyeteam783.workers.dev/pos';
@@ -120,6 +121,8 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   /* v5 : direct vidéo. dev = cet appareil (au hasard, gardé) ; pass = l'accès (invitation ou achat) de cette auto sur cet appareil. */
   const WURL=API.replace(/\/pos$/,'');
   let DEV=''; try{ DEV=localStorage.getItem('suivi.dev')||''; if(!/^[a-z0-9]{32}$/.test(DEV)){ DEV=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join(''); localStorage.setItem('suivi.dev',DEV); } }catch(e){ DEV=DEV||'x'.repeat(32); }
+  /* v6 : accès équipe (admin) : la clé de l'équipe, entrée une fois sur cet appareil, voit le direct sans payer. */
+  let ADM=''; try{ ADM=localStorage.getItem('suivi.adm')||''; }catch(e){}
   const pKey='suivi.p.'+AUTO; let PASS=String(Q.get('p')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,30);
   if(PASS){ try{ localStorage.setItem(pKey,PASS); }catch(e){} } else { try{ PASS=localStorage.getItem(pKey)||''; }catch(e){} }
   let vid=null, vidOpen=false, vidExp=0, vidBusy=false;
@@ -212,7 +215,8 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
     annule:'Cette invitation a été annulée par l\u2019équipe.', fini:'Cet accès est terminé (fin du rallye).', inconnu:'Ce lien d\u2019accès n\u2019existe pas : vérifie le lien reçu.',
     pas_paye:'Le paiement n\u2019est pas encore confirmé. Réessaie dans un instant.', pas_de_video:'Pas de direct vidéo pour cette auto.'};
   async function vidGo(refresh){ if(vidBusy) return; vidBusy=true;
-    try{ const r=await fetch(WURL+'/acces',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV,p:PASS||undefined})}); const d=await r.json();
+    try{ const h={'content-type':'application/json'}; if(ADM) h.authorization='Bearer '+ADM;
+      const r=await fetch(WURL+'/acces',{method:'POST',headers:h,body:JSON.stringify({auto:AUTO,dev:DEV,p:ADM?undefined:(PASS||undefined)})}); const d=await r.json();
       if(d.ok){ if(d.p&&d.p!==PASS){ PASS=d.p; try{ localStorage.setItem(pKey,PASS); }catch(e){} }
         vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; const f=$('vidF'), src=d.lecteur+'?autoplay=true&muted=true';
         if(!refresh||f.getAttribute('src')!==src) f.setAttribute('src',src); vidUpd(); requestAnimationFrame(draw); return; }
@@ -225,6 +229,12 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
     }catch(e){ if(!refresh) vidMsg('Connexion au serveur impossible pour le moment.'); }
     finally{ vidBusy=false; } }
   $('vidBtn').onclick=()=>{ if(vidOpen) vidClose(); else vidGo(false); };
+  const admShow=()=>{ const a=$('adm'); if(a) a.textContent=ADM?'Accès équipe : activé (toucher pour l\u2019enlever)':'Accès équipe'; };
+  admShow();
+  $('adm').onclick=e=>{ e.preventDefault();
+    if(ADM){ ADM=''; try{ localStorage.removeItem('suivi.adm'); }catch(e){} admShow(); if(vidOpen) vidClose(); return; }
+    const k=(prompt('Clé de l\u2019équipe (la même que dans RAM). Elle reste seulement sur cet appareil.')||'').trim();
+    if(!k) return; ADM=k; try{ localStorage.setItem('suivi.adm',k); }catch(e){} admShow(); vidGo(false); };
   $('vidX').onclick=()=>{ $('vidBox').hidden=true; }; $('vidBox').onclick=e=>{ if(e.target.id==='vidBox') $('vidBox').hidden=true; };
   $('vidPay').onclick=async()=>{ const P=$('vidPay'); P.disabled=true;
     try{ const r=await fetch(WURL+'/achat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV})}); const d=await r.json();
