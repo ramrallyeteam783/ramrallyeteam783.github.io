@@ -22,7 +22,10 @@
    Carte maison (tuiles OpenStreetMap), sans librairie externe. Données : Worker Cloudflare ram-suivi.
    v3 (21 nov., Simon : « une petite app à télécharger pour les fans et/ou l'équipe de service », « page qui s'installe ») :
    s'installe comme une app (suivi.webmanifest, suivi-sw.js, suivi-192.png, suivi-512.png) ; bouton « Installer l'app » ;
-   l'app ouverte de l'écran d'accueil (suivi.html?app=1) montre la dernière auto ouverte avec un lien ?auto=. */
+   l'app ouverte de l'écran d'accueil (suivi.html?app=1) montre la dernière auto ouverte avec un lien ?auto=.
+   v5 (21 nov., Simon : « si un fan veut un direct il paye, et si je veux que mon équipe voie j'ai juste à autoriser ») :
+   bouton « Voir l'intérieur » : le direct de la GoPro (Cloudflare Stream, jeton signé donné par le serveur).
+   Accès payé par rallye (Stripe) ou invitation de l'équipe (?p=…), attaché au premier appareil (suivi.dev). La carte reste gratuite. */
 :root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
@@ -58,6 +61,24 @@ header h1 b{color:var(--orange)}
 #attr{position:absolute;left:6px;bottom:4px;font-size:11px;color:#ccc;background:#0008;padding:1px 6px;border-radius:4px;z-index:2}
 #attr a{color:#ccc}
 footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+#main{flex:1;display:flex;flex-direction:column;min-height:0}
+#vid{position:relative;flex:none;width:100%;aspect-ratio:16/9;max-height:50vh;background:#000;border-bottom:2px solid var(--orange)}
+#vid[hidden]{display:none}
+#vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media (min-width:900px) and (orientation:landscape){#main{flex-direction:row}#vid{width:50%;max-height:none;aspect-ratio:auto;border-bottom:0;border-right:2px solid var(--orange)}}
+#vidBtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--orange);background:transparent;color:var(--orange);font:italic 800 16px/1 "Barlow Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+#vidBtn.on{background:var(--orange);color:#111}
+#vidBtn[hidden]{display:none}
+#vidBtn small{font:600 12px Barlow,sans-serif;text-transform:none;letter-spacing:0;opacity:.85}
+#vidBtn i{width:8px;height:8px;border-radius:50%;background:#e33;display:inline-block}
+#vidBox{position:fixed;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:#000a}
+#vidBox[hidden]{display:none}
+#vidBox>div{max-width:400px;padding:18px;border-radius:12px;background:var(--panel);border:2px solid var(--orange)}
+#vidBox p{margin:0 0 12px}
+#vidBox .row{display:flex;gap:10px;flex-wrap:wrap}
+#vidBox button{min-height:44px;padding:0 18px;border-radius:10px;border:0;font:700 16px Barlow,sans-serif;cursor:pointer}
+#vidPay{background:var(--orange);color:#111}
+#vidX{background:#2a2f33;color:var(--fg)}
 #inst{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--teal);background:transparent;color:var(--teal);font:italic 800 16px/1 "Barlow Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
 #inst[hidden]{display:none}
 #instHelp{position:fixed;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:#000a}
@@ -69,7 +90,9 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
 </head>
 <body>
 <header><h1>Suivre l'auto <b id="nom"></b></h1><a class="back" href="./">← Le site de l'équipe</a></header>
-<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
+<div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="vidBtn" type="button" hidden aria-pressed="false"></button><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
+<div id="main">
+<div id="vid" hidden><iframe id="vidF" title="Direct de l'intérieur de l'auto" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
 <div id="map" aria-label="Carte de la position de l'auto">
   <div id="tiles"></div>
   <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ff7a1a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
@@ -78,6 +101,8 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   <div id="empty">La position de l'auto s'affiche ici quand l'équipe active le suivi.</div>
   <div id="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>
 </div>
+</div>
+<div id="vidBox" hidden role="dialog" aria-label="Voir l'intérieur"><div><p><b>Voir l'intérieur</b></p><p id="vidTxt"></p><div class="row"><button id="vidPay" type="button" hidden></button><button id="vidX" type="button">Fermer</button></div></div></div>
 <div id="instHelp" hidden role="dialog" aria-label="Installer l'app"><div><p><b>Installer l'app</b></p><p id="instTxt"></p><button id="instOk" type="button">OK</button></div></div>
 <footer>La position est envoyée par l'équipe pendant le rallye. Elle peut avoir jusqu'à une minute de retard en liaison, et couper là où il n'y a pas de réseau cellulaire.</footer>
 <script>
@@ -92,6 +117,12 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   else if(Q.has('app')||SOLO()){ try{ AUTO=net(localStorage.getItem('suivi.auto')); }catch(e){} }
   AUTO=AUTO||'783';
   let nomVu='', err='';
+  /* v5 : direct vidéo. dev = cet appareil (au hasard, gardé) ; pass = l'accès (invitation ou achat) de cette auto sur cet appareil. */
+  const WURL=API.replace(/\/pos$/,'');
+  let DEV=''; try{ DEV=localStorage.getItem('suivi.dev')||''; if(!/^[a-z0-9]{32}$/.test(DEV)){ DEV=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join(''); localStorage.setItem('suivi.dev',DEV); } }catch(e){ DEV=DEV||'x'.repeat(32); }
+  const pKey='suivi.p.'+AUTO; let PASS=String(Q.get('p')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,30);
+  if(PASS){ try{ localStorage.setItem(pKey,PASS); }catch(e){} } else { try{ PASS=localStorage.getItem(pKey)||''; }catch(e){} }
+  let vid=null, vidOpen=false, vidExp=0, vidBusy=false;
   function setNom(n){ n=String(n||AUTO); if(n===nomVu) return; nomVu=n; $('nom').textContent=n; document.getElementById('car').textContent=(n.match(/#\s*([A-Za-z0-9]+)/)||[])[1]||AUTO.slice(0,6); document.title=`Suivre l'auto ${n} · R.A.M. Rallye Team`; }
   const TILE=(z,x,y)=>`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
   const $=id=>document.getElementById(id), map=$('map'), tiles=$('tiles'), trailL=$('trailL'), trailS=$('trailS'), car=$('car');
@@ -151,7 +182,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   async function poll(){
     try{
       const r=await fetch(API+`?auto=${AUTO}`+(since?`&since=${since}`:''),{cache:'no-store'}); if(!r.ok&&r.status!==404) throw 0; const d=await r.json();
-      err=d.err||''; setNom(d.nom||AUTO);
+      err=d.err||''; setNom(d.nom||AUTO); vid=d.vid||null;
       if(d.now) srvSkew=d.now-Date.now()/1000;
       etat=d.etat;
       /* Nouveau suivi (ou 1re lecture) : on repart à zéro ; la réponse contient déjà le trajet depuis le début du suivi. */
@@ -159,6 +190,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
       if(d.pts&&d.pts.length){ pts=pts.concat(d.pts).slice(-6000); since=pts[pts.length-1][0]; }
       if(follow&&!(Date.now()-dragAt<15000)) recenter(); else draw();
       if(etat&&pts.length&&z<12&&follow){ zoomTo(14); recenter(); }
+      vidUpd();
     }catch(e){ $('info').textContent='Connexion au serveur impossible pour le moment, on réessaie…'; }
     status();
   }
@@ -167,6 +199,42 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
   async function loop(){ if(document.hidden) return; await poll(); next(); }
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) loop(); else clearTimeout(timer); });
   setNom(AUTO==='783'?'#783':AUTO); center(46.8,-71.5); draw(); loop(); setInterval(status,5000);
+  /* ----- v5 : Voir l'intérieur ----- */
+  const money=c=>(c/100).toFixed(2).replace('.',',')+' $';
+  function vidUpd(){ const b=$('vidBtn'), on=!!(vid&&vid.on)&&!err;
+    b.hidden=!on; if(!on){ if(vidOpen) vidClose(); return; }
+    b.classList.toggle('on',vidOpen); b.setAttribute('aria-pressed',vidOpen?'true':'false');
+    b.innerHTML=vidOpen?'✕ Cacher l\u2019intérieur':(vid.live?'<i></i> ':'')+'🎥 Voir l\u2019intérieur'+(vid.live?'':' <small>(pas en direct)</small>');
+    if(vidOpen&&vidExp&&Date.now()/1000>vidExp-90) vidGo(true); }
+  function vidClose(){ vidOpen=false; vidExp=0; $('vid').hidden=true; const f=$('vidF'); if(f.getAttribute('src')) f.removeAttribute('src'); vidUpd(); requestAnimationFrame(draw); }
+  function vidMsg(t,pay){ $('vidTxt').textContent=t; const P=$('vidPay'); P.hidden=!pay; if(pay) P.textContent=pay; $('vidBox').hidden=false; }
+  const ERR={autre_appareil:'Cet accès est déjà utilisé sur un autre appareil. Chaque invitation et chaque achat marche sur un seul appareil.',
+    annule:'Cette invitation a été annulée par l\u2019équipe.', fini:'Cet accès est terminé (fin du rallye).', inconnu:'Ce lien d\u2019accès n\u2019existe pas : vérifie le lien reçu.',
+    pas_paye:'Le paiement n\u2019est pas encore confirmé. Réessaie dans un instant.', pas_de_video:'Pas de direct vidéo pour cette auto.'};
+  async function vidGo(refresh){ if(vidBusy) return; vidBusy=true;
+    try{ const r=await fetch(WURL+'/acces',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV,p:PASS||undefined})}); const d=await r.json();
+      if(d.ok){ if(d.p&&d.p!==PASS){ PASS=d.p; try{ localStorage.setItem(pKey,PASS); }catch(e){} }
+        vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; const f=$('vidF'), src=d.lecteur+'?autoplay=true&muted=true&preload=auto';
+        if(!refresh||f.getAttribute('src')!==src) f.setAttribute('src',src); vidUpd(); requestAnimationFrame(draw); return; }
+      if(refresh){ vidClose(); }
+      if(PASS&&['autre_appareil','annule','fini','inconnu'].includes(d.err)){ PASS=''; try{ localStorage.removeItem(pKey); }catch(e){} }
+      if(d.err==='aucun'||(d.err==='pas_paye'&&!PASS)){
+        if(vid&&vid.prix) vidMsg(`Le direct de l\u2019intérieur de l\u2019auto est payant : ${money(vid.prix)} pour ${vid.rallye?'le '+vid.rallye:'ce rallye'}${vid.fin?' (jusqu\u2019au '+new Date(vid.fin*1000).toLocaleDateString('fr-CA',{day:'numeric',month:'long'})+')':''}, sur cet appareil. La carte reste gratuite.`,'Payer '+money(vid.prix));
+        else vidMsg('Le direct vidéo est réservé à l\u2019équipe pour le moment.');
+      } else vidMsg(ERR[d.err]||'Le direct n\u2019est pas disponible pour le moment.');
+    }catch(e){ if(!refresh) vidMsg('Connexion au serveur impossible pour le moment.'); }
+    finally{ vidBusy=false; } }
+  $('vidBtn').onclick=()=>{ if(vidOpen) vidClose(); else vidGo(false); };
+  $('vidX').onclick=()=>{ $('vidBox').hidden=true; }; $('vidBox').onclick=e=>{ if(e.target.id==='vidBox') $('vidBox').hidden=true; };
+  $('vidPay').onclick=async()=>{ const P=$('vidPay'); P.disabled=true;
+    try{ const r=await fetch(WURL+'/achat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV})}); const d=await r.json();
+      if(d.ok&&d.url){ if(d.p){ PASS=d.p; try{ localStorage.setItem(pKey,PASS); }catch(e){} } location.href=d.url; return; }
+      vidMsg(d.err==='paiement_pas_pret'?'Le paiement n\u2019est pas encore prêt. Réessaie plus tard.':'Le paiement n\u2019a pas pu partir. Réessaie dans un instant.');
+    }catch(e){ vidMsg('Connexion au serveur impossible pour le moment.'); } finally{ P.disabled=false; } };
+  /* Arrivé par un lien d'invitation ou après un paiement (?p=…) : l'accès s'attache tout de suite à cet appareil. */
+  if(Q.get('p')) setTimeout(()=>{ fetch(WURL+'/acces',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({auto:AUTO,dev:DEV,p:PASS})}).then(r=>r.json()).then(d=>{
+      if(d.ok) $('info').textContent='Accès au direct vidéo activé sur cet appareil : touche « Voir l\u2019intérieur ».';
+      else { if(['autre_appareil','annule','fini','inconnu'].includes(d.err)){ PASS=''; try{ localStorage.removeItem(pKey); }catch(e){} } if(ERR[d.err]) vidMsg(ERR[d.err]); } }).catch(()=>{}); },800);
   /* Installer l'app : Android et ordinateur (Chrome, Edge) = la fenêtre du navigateur ; iPhone et iPad = explication (Partager, « Sur l'écran d'accueil »). */
   const inst=$('inst'), help=$('instHelp'); let bip=null;
   const iOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
