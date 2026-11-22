@@ -26,7 +26,8 @@
    v5 (21 nov., Simon : « si un fan veut un direct il paye, et si je veux que mon équipe voie j'ai juste à autoriser ») :
    bouton « Voir l'intérieur » : le direct de la GoPro (Cloudflare Stream, jeton signé donné par le serveur).
    Accès payé par rallye (Stripe) ou invitation de l'équipe (?p=…), attaché au premier appareil (suivi.dev). La carte reste gratuite.
-   v6 (22 nov.) : lecteur sans preload=auto (bloquait le direct sur cell) ; « Accès équipe » en bas : la clé de l'équipe (gardée sur l'appareil) voit sans payer. */
+   v6 (22 nov.) : lecteur sans preload=auto (bloquait le direct sur cell) ; « Accès équipe » en bas : la clé de l'équipe (gardée sur l'appareil) voit sans payer.
+   v7 (22 nov.) : plus de qualité « Auto » (Simon) : vidéo lue par hls.js, fixée à la qualité la plus haute du direct (celle choisie dans RAM) ; se relance toute seule si le direct n'a pas commencé. */
 :root{--bg:#0d0f10;--panel:#171a1c;--line:#2a2f33;--fg:#f2f2f2;--muted:#9aa3a8;--teal:#1fb5a6;--orange:#ff7a1a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Barlow,system-ui,sans-serif}
@@ -65,7 +66,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
 #main{flex:1;display:flex;flex-direction:column;min-height:0}
 #vid{position:relative;flex:none;width:100%;aspect-ratio:16/9;max-height:50vh;background:#000;border-bottom:2px solid var(--orange)}
 #vid[hidden]{display:none}
-#vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#vid video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
 @media (min-width:900px) and (orientation:landscape){#main{flex-direction:row}#vid{width:50%;max-height:none;aspect-ratio:auto;border-bottom:0;border-right:2px solid var(--orange)}}
 #vidBtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--orange);background:transparent;color:var(--orange);font:italic 800 16px/1 "Barlow Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
 #vidBtn.on{background:var(--orange);color:#111}
@@ -93,7 +94,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
 <header><h1>Suivre l'auto <b id="nom"></b></h1><a class="back" href="./">← Le site de l'équipe</a></header>
 <div id="bar"><span id="chip"><i></i><span id="chipT">Recherche…</span></span><span id="info"></span><button id="vidBtn" type="button" hidden aria-pressed="false"></button><button id="inst" type="button" hidden>⤓ Installer l'app</button><span id="leg"><span><i style="background:#ff7a1a"></i>Spéciales</span><span><i style="background:#3aa0ff"></i>Liaisons</span></span></div>
 <div id="main">
-<div id="vid" hidden><iframe id="vidF" title="Direct de l'intérieur de l'auto" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<div id="vid" hidden><video id="vidV" title="Direct de l'intérieur de l'auto" playsinline muted autoplay controls></video></div>
 <div id="map" aria-label="Carte de la position de l'auto">
   <div id="tiles"></div>
   <svg id="over" aria-hidden="true"><path id="trailL" fill="none" stroke="#3aa0ff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".85" d=""/><path id="trailS" fill="none" stroke="#ff7a1a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".95" d=""/></svg>
@@ -209,7 +210,24 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
     b.classList.toggle('on',vidOpen); b.setAttribute('aria-pressed',vidOpen?'true':'false');
     b.innerHTML=vidOpen?'✕ Cacher l\u2019intérieur':(vid.live?'<i></i> ':'')+'🎥 Voir l\u2019intérieur'+(vid.live?'':' <small>(pas en direct)</small>');
     if(vidOpen&&vidExp&&Date.now()/1000>vidExp-90) vidGo(true); }
-  function vidClose(){ vidOpen=false; vidExp=0; $('vid').hidden=true; const f=$('vidF'); if(f.getAttribute('src')) f.removeAttribute('src'); vidUpd(); requestAnimationFrame(draw); }
+  /* v7 : vidéo HLS (hls.js), qualité fixée à la plus haute du direct ; si le direct n'a pas encore commencé, on réessaie tout seul. */
+  const HLS_JS='https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
+  let HLS=null, vidSrc='', hlsT=0;
+  function hlsLoad(){ return window.Hls?Promise.resolve():new Promise((ok,ko)=>{ const s=document.createElement('script'); s.src=HLS_JS; s.onload=ok; s.onerror=ko; document.head.appendChild(s); }); }
+  function vidStop(){ vidSrc=''; clearTimeout(hlsT); if(HLS){ try{ HLS.destroy(); }catch(e){} HLS=null; } const v=$('vidV'); try{ v.pause(); }catch(e){} v.removeAttribute('src'); try{ v.load(); }catch(e){} }
+  async function vidPlay(url){ if(url===vidSrc) return; vidStop(); vidSrc=url; const v=$('vidV');
+    try{ await hlsLoad(); }catch(e){}
+    if(vidSrc!==url) return;
+    if(window.Hls&&Hls.isSupported()){
+      const h=HLS=new Hls({capLevelToPlayerSize:false,liveDurationInfinity:true});
+      h.on(Hls.Events.MANIFEST_PARSED,()=>{ const top=h.levels.length-1; if(top>=0){ h.currentLevel=top; h.loadLevel=top; } v.play().catch(()=>{}); });
+      h.on(Hls.Events.LEVEL_SWITCHED,()=>{ const top=h.levels.length-1; if(top>=0&&h.currentLevel!==top) h.currentLevel=top; });
+      h.on(Hls.Events.ERROR,(ev,d)=>{ if(!d||!d.fatal||HLS!==h) return;
+        if(d.type===Hls.ErrorTypes.MEDIA_ERROR){ try{ h.recoverMediaError(); }catch(e){} return; }
+        clearTimeout(hlsT); hlsT=setTimeout(()=>{ if(HLS===h&&vidSrc===url){ vidSrc=''; vidPlay(url); } },4000); });
+      h.loadSource(url); h.attachMedia(v);
+    } else { v.src=url; v.play().catch(()=>{}); v.onerror=()=>{ clearTimeout(hlsT); hlsT=setTimeout(()=>{ if(vidSrc===url){ vidSrc=''; vidPlay(url); } },4000); }; } }
+  function vidClose(){ vidOpen=false; vidExp=0; $('vid').hidden=true; vidStop(); vidUpd(); requestAnimationFrame(draw); }
   function vidMsg(t,pay){ $('vidTxt').textContent=t; const P=$('vidPay'); P.hidden=!pay; if(pay) P.textContent=pay; $('vidBox').hidden=false; }
   const ERR={autre_appareil:'Cet accès est déjà utilisé sur un autre appareil. Chaque invitation et chaque achat marche sur un seul appareil.',
     annule:'Cette invitation a été annulée par l\u2019équipe.', fini:'Cet accès est terminé (fin du rallye).', inconnu:'Ce lien d\u2019accès n\u2019existe pas : vérifie le lien reçu.',
@@ -218,8 +236,7 @@ footer{padding:8px 14px 12px;color:var(--muted);font-size:13px;border-top:1px so
     try{ const h={'content-type':'application/json'}; if(ADM) h.authorization='Bearer '+ADM;
       const r=await fetch(WURL+'/acces',{method:'POST',headers:h,body:JSON.stringify({auto:AUTO,dev:DEV,p:ADM?undefined:(PASS||undefined)})}); const d=await r.json();
       if(d.ok){ if(d.p&&d.p!==PASS){ PASS=d.p; try{ localStorage.setItem(pKey,PASS); }catch(e){} }
-        vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; const f=$('vidF'), src=d.lecteur+'?autoplay=true&muted=true';
-        if(!refresh||f.getAttribute('src')!==src) f.setAttribute('src',src); vidUpd(); requestAnimationFrame(draw); return; }
+        vidOpen=true; vidExp=d.exp||0; $('vid').hidden=false; vidPlay(String(d.lecteur).replace(/\/iframe$/,'/manifest/video.m3u8')); vidUpd(); requestAnimationFrame(draw); return; }
       if(refresh){ vidClose(); }
       if(PASS&&['autre_appareil','annule','fini','inconnu'].includes(d.err)){ PASS=''; try{ localStorage.removeItem(pKey); }catch(e){} }
       if(d.err==='aucun'||(d.err==='pas_paye'&&!PASS)){
